@@ -1,7 +1,9 @@
 import ApiClient from "./client.ts";
 
+import v1MetricsApi from "./v1/metrics.ts";
 import v1MonitorsApi from "./v1/monitors.ts";
 import v1ServiceChecksApi from "./v1/service_checks.ts";
+export {CheckStatus} from './v1/service_checks.ts';
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
 
 import v2RolesApi from "./v2/roles.ts";
@@ -34,6 +36,15 @@ export default class DatadogApi extends ApiClient {
     return this.fetchJson({
       path: `/api/v1/validate`,
     }) as Promise<{valid: true}>;
+  }
+
+  /**
+   * The metrics endpoint allows you to:
+   * - Post metrics data so it can be graphed on Datadog’s dashboards
+   * - Query metrics from any time period
+   */
+  get v1Metrics(): v1MetricsApi {
+    return new v1MetricsApi(this);
   }
 
   /**

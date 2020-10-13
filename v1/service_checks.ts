@@ -26,7 +26,9 @@ export default class DatadogServiceChecksApi {
         message: data.message,
         status: data.status.valueOf(),
         tags: data.tags ?? [],
-        timestamp: data.timestamp?.valueOf(),
+        timestamp: data.timestamp
+          ? Math.floor(data.timestamp.valueOf() / 1000)
+          : undefined,
       },
     });
     return (json as {status: string}).status;

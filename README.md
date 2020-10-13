@@ -18,6 +18,8 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 
 ### Implemented APIs
 
+* `v1Metrics`: submit custom data series points to Datadog
+    * For a full example of metrics submission, see `examples/emit-metrics.ts`
 * `v1Monitors`: get by id, get all, search by query
 * `v1ServiceChecks`: submit 'check run' statuses to Datadog
 * `v1UsageMetering`: get billable summary, get top custom metrics
@@ -27,10 +29,6 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 If you want a different API not listed here,
 please open a Github issue or PR into `v1/` or `v2/` as appropriate.
 In the meantime you can use `fetchJson` for such APIs.
-
-### Planned APIs
-
-* `metrics`: Submitting data points
 
 ## Usage
 
