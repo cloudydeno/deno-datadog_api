@@ -33,31 +33,38 @@ Importing `mod.ts` gives you the whole implemented API surface.
 ```typescript
 import DatadogApi from "https://deno.land/x/datadog_api/mod.ts";
 
-// Set up an API client
-const datadog = new DatadogApi({
-  apiKey: Deno.env.get("DD_CLIENT_API_KEY"),
-  appKey: Deno.env.get("DD_CLIENT_APP_KEY"),
-  apiBase: Deno.env.get("DD_CLIENT_BASE_URL"), // defaults to US server
-});
+// Set up an API client using DATADOG_API_KEY and such
+const datadog = DatadogApi.fromEnvironment(Deno.env);
 
 // Perform a monitor search by tag
 const {monitors} = await datadog.v1Monitors.search('env:"prod"');
 console.log("First monitor:", monitors[0]);
+
+// Or, directly fetch JSON (for using APIs that don't have functions yet)
+const dashboardLists = await datadog.fetchJson({
+  path: '/api/v2/dashboard/lists/manual',
+});
 ```
 
-You could also import `client.ts` as well as a specific API from `v1/` to be more lean.
+You can also import specific parts of this module by
+starting with `client.ts` and adding specific APIs from `v1/`.
+This lets you skip downloading APIs you don't use.
 
 ```typescript
+// Assemble an API client manually
 import ApiClient from "https://deno.land/x/datadog_api/client.ts";
-import V1MonitorsApi from "https://deno.land/x/datadog_api/v1/monitors.ts";
+const datadog = new ApiClient({
+  apiKey: Deno.env.get("DATADOG_API_KEY"),
+  appKey: Deno.env.get("DATADOG_APP_KEY"),
+  apiBase: Deno.env.get("DATADOG_HOST"), // defaults to US server
+});
 
 // Set up a Monitors API client
-const api = new ApiClient(myCredentials);
-const monitorsApi = new V1MonitorsApi(api);
+import V1MonitorsApi from "https://deno.land/x/datadog_api/v1/monitors.ts";
+const monitorsApi = new V1MonitorsApi(datadog);
 
 // Get a monitor
 console.log(await monitorsApi.getOne("234231"));
-
 ```
 
 ## License

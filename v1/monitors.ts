@@ -1,7 +1,11 @@
 type TODO = unknown;
 
+// Common API client contract
 interface ApiClient {
-  fetchJson(url: string, data?: unknown): Promise<unknown>;
+  fetchJson(opts: {
+    path: string,
+    query?: URLSearchParams,
+  }): Promise<unknown>;
 }
 
 export default class DatadogMonitorsApi {
@@ -11,14 +15,16 @@ export default class DatadogMonitorsApi {
   }
 
   async getAll(): Promise<Array<DatadogMonitor>> {
-    const json = await this.#api.fetchJson(`/api/v1/monitor`);
+    const json = await this.#api.fetchJson({
+      path: `/api/v1/monitor`,
+    });
     return json as Array<DatadogMonitor>;
   }
 
   async getOne(id: string): Promise<DatadogMonitor> {
-    const json = await this.#api.fetchJson(
-      `/api/v1/monitor/${encodeURIComponent(id)}`,
-    );
+    const json = await this.#api.fetchJson({
+      path: `/api/v1/monitor/${encodeURIComponent(id)}`,
+    });
     return json as DatadogMonitor;
   }
 
@@ -26,19 +32,20 @@ export default class DatadogMonitorsApi {
     page?: number;
     per_page?: number;
     sort?: {
-      field: "name" | "status" | "tags" | string;
+      field: "name" | "status" | "tags";
       order: "asc" | "desc";
     };
   } = {}): Promise<DatadogMonitorSearchResult> {
-    const params = new URLSearchParams([["query", query]]);
-    if (opts.page != null) params.set("page", `${opts.page}`);
-    if (opts.per_page != null) params.set("per_page", `${opts.per_page}`);
+    const qs = new URLSearchParams([["query", query]]);
+    if (opts.page != null) qs.set("page", `${opts.page}`);
+    if (opts.per_page != null) qs.set("per_page", `${opts.per_page}`);
     if (opts.sort != null) {
-      params.set("sort", `${opts.sort.field},${opts.sort.order}`);
+      qs.set("sort", `${opts.sort.field},${opts.sort.order}`);
     }
-    const json = await this.#api.fetchJson(
-      `/api/v1/monitor/search?` + params.toString(),
-    );
+    const json = await this.#api.fetchJson({
+      path: `/api/v1/monitor/search`,
+      query: qs,
+    });
     return json as DatadogMonitorSearchResult;
   }
 }
@@ -161,7 +168,8 @@ export type MonitorClassification =
   | "integration"
   | "log"
   | "metric"
-  | string;
+  | "network"
+  ;
 
 export type MonitorStatus =
   | "Alert"
@@ -184,4 +192,4 @@ export type MonitorType =
   | "synthetics alert"
   | "trace-analytics alert"
   | "slo alert"
-  | string;
+  ;

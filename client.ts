@@ -7,55 +7,64 @@ function fixupDatadogJson(json: string): string {
 }
 
 export type ApiConfig = {
-  apiKey?: string;
+  apiKey: string;
   appKey?: string;
   apiBase?: string;
 };
 
 export default class DatadogApiClient {
-  headers: Record<string,string>;
+  headers: Headers;
   apiBase: string;
 
-  constructor({
-    apiKey,
-    appKey,
-    apiBase = "https://api.datadoghq.com",
-  }: ApiConfig) {
-    if (!apiKey) {
-      throw new Error(
-        `apiKey is required to communicate with Datadog`,
-      );
-    }
-    if (!apiBase?.includes("://")) {
-      throw new Error(
-        `If you pass apiBase, it must be an absolute URL`,
-      );
+  constructor(opts: ApiConfig) {
+    if (!opts.apiKey) throw new Error(
+      `apiKey is required to communicate with Datadog`,
+    );
+
+    this.headers = new Headers({
+      "content-type": "application/json",
+      "accept": "application/json",
+      "dd-api-key": opts.apiKey,
+    });
+    if (opts.appKey) {
+      this.headers.set("dd-application-key", opts.appKey);
     }
 
-    this.headers = {
-      "dd-api-key": apiKey,
-    };
-    if (appKey) {
-      this.headers["dd-application-key"] = appKey;
-    }
-    this.apiBase = apiBase;
+    this.apiBase = opts.apiBase || "https://api.datadoghq.com";
+    if (!this.apiBase.includes("://")) throw new Error(
+      `If you pass apiBase, it must be an absolute URL`,
+    );
   }
 
-  async fetchJson(url: string, opts: {
+  async fetchJson(opts: {
+    path: string;
+    query?: URLSearchParams,
     requestJson?: unknown;
-  } = {}): Promise<unknown> {
-    const resp = await fetch(this.apiBase + url, {
-      headers: {
-        "content-type": "application/json",
-        "accept": "application/json",
-        ...this.headers,
-      },
+  }): Promise<unknown> {
+    let url = this.apiBase + opts.path;
+    if (opts.query) {
+      url += url.includes('?') ? '&' : '?';
+      url += opts.query.toString();
+    }
+
+    const resp = await fetch(url, {
+      headers: this.headers,
       body: opts.requestJson ? JSON.stringify(opts.requestJson) : "",
     });
 
     const respBody = await resp.text();
     if (resp.status >= 200 && resp.status < 300) {
       return JSON.parse(fixupDatadogJson(respBody));
+    }
+
+    // Be friendly if the user is likely misconfigured
+    if (resp.status === 403 && respBody === '{"errors": ["Forbidden"]}') {
+      if (!('dd-application-key' in this.headers)) {
+        throw new DatadogError({
+          _type: "simple", errors: [
+            "Forbidden. Did you forget to set DATADOG_APP_KEY?"
+          ]});
+      }
     }
 
     if (respBody.startsWith("{")) {
@@ -91,6 +100,10 @@ export class DatadogError extends Error {
   }
 }
 
+
+//------------------
+// Error Handling
+
 // Datadog can return a few different shapes of error
 // Let's make an artificial descriminated union so Typescript is more helpful
 // We'll then throw a consistent DatadogError wrapped around whichever is given.
@@ -110,6 +123,7 @@ function recognizeError(data: unknown): ServerError | null {
   return null;
 }
 
+/** Error often returned for validation errors and other endpoint-specific checks */
 export interface SimpleError {
   "_type": "simple";
   "errors": string[];
@@ -120,6 +134,7 @@ function isSimpleError(err: any): err is SimpleError {
     typeof err.errors[0] === "string";
 }
 
+/** Error for general API problems such as missing auth */
 export interface RichError {
   "_type": "rich";
   "errors": string[];
@@ -140,6 +155,7 @@ function isRichError(err: any): err is RichError {
     typeof err.email === "string";
 }
 
+/** Generic error from the overall web server */
 export interface HtmlError {
   "_type": "html";
   "code": string;

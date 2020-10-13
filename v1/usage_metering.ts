@@ -1,63 +1,91 @@
 type TODO = unknown;
 
+// Common API client contract
 interface ApiClient {
-  fetchJson(url: string, data?: unknown): Promise<unknown>;
+  fetchJson(opts: {
+    path: string,
+    query?: URLSearchParams,
+  }): Promise<unknown>;
 }
 
+/**
+ * The usage metering API allows you to get hourly, daily, and monthly usage
+ * across multiple facets of Datadog.
+ * This API is available to all Pro and Enterprise customers.
+ * Usage is only accessible for parent-level organizations.
+ *
+ * Note: Usage data is delayed by up to 72 hours from when it was incurred.
+ * It is retained for the past 15 months.
+ */
 export default class DatadogUsageMeteringApi {
   #api: ApiClient;
   constructor(api: ApiClient) {
     this.#api = api;
   }
 
-  async getSummary(opts: {
-    startMonth: string;
-    endMonth?: string;
-    includeOrgDetails?: boolean;
-  }): Promise<TODO> {
-    const params = new URLSearchParams([["start_month", opts.startMonth]]);
-    if (opts.endMonth != null) params.set("end_month", `${opts.endMonth}`);
-    if (opts.includeOrgDetails != null) {
-      params.set("include_org_details", `${opts.includeOrgDetails}`);
-    }
-    return await this.#api.fetchJson(
-      `/api/v1/usage/summary?` + params.toString(),
-    );
+  /** Get billable usage across your multi-org account. */
+  async getBillableSummary(month: string): Promise<UsageList<BillableSummary>> {
+    const qs = new URLSearchParams([["month", month]]);
+
+    const json = await this.#api.fetchJson({
+      path: `/api/v1/usage/billable-summary`,
+      query: qs,
+    });
+    return json as UsageList<BillableSummary>;
   }
 
-  async getBillableSummary(month: string): Promise<BillableSummaryList> {
-    const params = new URLSearchParams([["month", month]]);
-    const json = await this.#api.fetchJson(
-      `/api/v1/usage/billable-summary?` + params.toString(),
-    );
-    return json as BillableSummaryList;
+  /** Get top 500 custom metrics by hourly average. */
+  async getTopCustomMetrics(month: string, opts: {
+    metricNames?: string[],
+  }={}): Promise<UsageList<CustomMetric>> {
+    const qs = new URLSearchParams([["month", month]]);
+    if (opts.metricNames) {
+      qs.set("names", opts.metricNames.join(','));
+    }
+
+    const json = await this.#api.fetchJson({
+      path: `/api/v1/usage/top_avg_metrics`,
+      query: qs,
+    });
+    return json as UsageList<CustomMetric>;
   }
 }
 
-export type BillableSummaryList = {
-  usage: BillableSummary[];
+export type UsageList<T> = {
+  usage: T[];
 };
+
 
 export interface BillableSummary {
   org_name: string;
-  billing_plan: "Pro" | string;
-  public_id: string;
-  end_date: string;
-  ratio_in_month: number;
   num_orgs: number;
-  calc_date: string;
-  usage: Record<BillableSummaryCategories, BillableSummaryUsage>;
+  public_id: string;
+  billing_plan: "Free" | "Pro" | "Enterprise"; // actually though?
+  /** 1 = 100% */
+  ratio_in_month: number;
+  /** YYYY-MM-DD */
   start_date: string;
+  /** YYYY-MM-DD */
+  end_date: string;
+  /** YYYY-MM-DD */
+  calc_date: string;
+  usage: Record<BillableSummaryCategories, BillableSummaryUsage | undefined>;
 }
 
 export interface BillableSummaryUsage {
-  org_billable_usage: number;
   usage_unit: UsageUnit;
+  /** The number of units used within the billable timeframe. */
+  org_billable_usage: number;
+  /** The total account usage. */
   account_billable_usage: number;
-  first_billable_usage_hour: string;
+  /** Elapsed usage hours for some billable product. */
   elapsed_usage_hours: number;
-  last_billable_usage_hour: string;
+  /** The percentage of account usage the org represents. 100 = 100% */
   percentage_in_account: number;
+  /** YYYY-MM-DDTHH */
+  first_billable_usage_hour: string;
+  /** YYYY-MM-DDTHH */
+  last_billable_usage_hour: string;
 }
 
 export type BillableSummaryCategories =
@@ -70,7 +98,7 @@ export type BillableSummaryCategories =
   | "apm_host_top99p"
   | "logs_indexed_sum"
   | "siem_sum"
-  | string;
+;
 
 export type UsageUnit =
   | "gib"
@@ -80,4 +108,14 @@ export type UsageUnit =
   | "traces"
   | "container_hours"
   | "logs"
-  | string;
+;
+
+
+export interface CustomMetric {
+  metric_category: "standard" | "custom";
+  metric_name: string;
+  /** Average number of timeseries per hour in which the metric occurs. */
+  avg_metric_hour: number;
+  /** Maximum number of timeseries per hour in which the metric occurs. */
+  max_metric_hour: number;
+};
