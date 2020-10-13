@@ -1,6 +1,7 @@
 import ApiClient from "./client.ts";
 
 import v1MonitorsApi from "./v1/monitors.ts";
+import v1ServiceChecksApi from "./v1/service_checks.ts";
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
 
 import v2RolesApi from "./v2/roles.ts";
@@ -41,6 +42,17 @@ export default class DatadogApi extends ApiClient {
    */
   get v1Monitors(): v1MonitorsApi {
     return new v1MonitorsApi(this);
+  }
+
+  /**
+   * The service check endpoint allows you to
+   * post check statuses for use with monitors.
+   * Service check messages are limited to 500 characters.
+   * If a check is posted with a message containing more than 500 characters,
+   * only the first 500 characters are displayed.
+   */
+  get v1ServiceChecks(): v1ServiceChecksApi {
+    return new v1ServiceChecksApi(this);
   }
 
   /**

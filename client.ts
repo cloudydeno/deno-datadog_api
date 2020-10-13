@@ -37,9 +37,10 @@ export default class DatadogApiClient {
   }
 
   async fetchJson(opts: {
+    method?: 'GET' | 'POST';
     path: string;
-    query?: URLSearchParams,
-    requestJson?: unknown;
+    query?: URLSearchParams;
+    body?: unknown;
   }): Promise<unknown> {
     let url = this.apiBase + opts.path;
     if (opts.query) {
@@ -49,7 +50,8 @@ export default class DatadogApiClient {
 
     const resp = await fetch(url, {
       headers: this.headers,
-      body: opts.requestJson ? JSON.stringify(opts.requestJson) : "",
+      method: opts.method ?? 'GET',
+      body: opts.body ? JSON.stringify(opts.body) : "",
     });
 
     const respBody = await resp.text();
