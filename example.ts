@@ -2,6 +2,8 @@
 import DatadogApi from "./mod.ts";
 const datadog = DatadogApi.fromEnvironment(Deno.env);
 
+console.log('Auth is valid:', await datadog.validateAccess());
+
 // Perform a monitor search by tag
 const results = await datadog
   .v1Monitors.search('NOT tag:"terraformed"', {

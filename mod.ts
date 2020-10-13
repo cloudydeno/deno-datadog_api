@@ -3,6 +3,9 @@ import ApiClient from "./client.ts";
 import v1MonitorsApi from "./v1/monitors.ts";
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
 
+import v2RolesApi from "./v2/roles.ts";
+import v2UsersApi from "./v2/users.ts";
+
 // subset of Deno.env
 interface EnvGetter {
   get(key: string): string | undefined;
@@ -22,11 +25,51 @@ export default class DatadogApi extends ApiClient {
     });
   }
 
+  /**
+   * Check if the API key (not the APP key) is valid.
+   * If invalid, an error is thrown.
+   */
+  validateAccess(): Promise<{valid: true}> {
+    return this.fetchJson({
+      path: `/api/v1/validate`,
+    }) as Promise<{valid: true}>;
+  }
+
+  /**
+   * Monitors allow you to watch a metric or check that you care about,
+   * notifying your team when some defined threshold is exceeded.
+   */
   get v1Monitors(): v1MonitorsApi {
     return new v1MonitorsApi(this);
   }
 
+  /**
+   * The usage metering API allows you to get hourly, daily, and monthly usage
+   * across multiple facets of Datadog.
+   * This API is available to all Pro and Enterprise customers.
+   * Usage is only accessible for parent-level organizations.
+   *
+   * Note: Usage data is delayed by up to 72 hours from when it was incurred.
+   * It is retained for the past 15 months.
+   */
   get v1UsageMetering(): v1UsageMeteringApi {
     return new v1UsageMeteringApi(this);
+  }
+
+  /**
+   * The Roles API is used to create and manage Datadog roles,
+   * what global permissions they grant, and which users belong to them.
+   * Permissions related to specific account assets can be
+   * granted to roles in the Datadog application without using this API.
+   * For example, granting read access on a specific log index to a role
+   * can be done in Datadog from the Pipelines page.
+   */
+  get v2Roles(): v2RolesApi {
+    return new v2RolesApi(this);
+  }
+
+  /** Create, edit, and disable users. */
+  get v2Users(): v2UsersApi {
+    return new v2UsersApi(this);
   }
 }

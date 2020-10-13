@@ -8,15 +8,6 @@ interface ApiClient {
   }): Promise<unknown>;
 }
 
-/**
- * The usage metering API allows you to get hourly, daily, and monthly usage
- * across multiple facets of Datadog.
- * This API is available to all Pro and Enterprise customers.
- * Usage is only accessible for parent-level organizations.
- *
- * Note: Usage data is delayed by up to 72 hours from when it was incurred.
- * It is retained for the past 15 months.
- */
 export default class DatadogUsageMeteringApi {
   #api: ApiClient;
   constructor(api: ApiClient) {

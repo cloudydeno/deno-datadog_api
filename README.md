@@ -16,8 +16,10 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 
 ### Implemented APIs
 
-* `monitors`: get by id, get all, search by query
-* `usageMetering`: get billable summary
+* `v1Monitors`: get by id, get all, search by query
+* `v1UsageMetering`: get billable summary, get top custom metrics
+* `v2Roles`: list and describe roles & permissions
+* `v2Users`: list, search, and describe datadog users
 
 If you want a different API,
 please open a Github issue or PR into the `v1/` folder.
@@ -36,6 +38,9 @@ import DatadogApi from "https://deno.land/x/datadog_api/mod.ts";
 // Set up an API client using DATADOG_API_KEY and such
 const datadog = DatadogApi.fromEnvironment(Deno.env);
 
+// Optionally check that our API key works, without actually doing anything
+await datadog.validateAccess();
+
 // Perform a monitor search by tag
 const {monitors} = await datadog.v1Monitors.search('env:"prod"');
 console.log("First monitor:", monitors[0]);
@@ -48,7 +53,7 @@ const dashboardLists = await datadog.fetchJson({
 
 You can also import specific parts of this module by
 starting with `client.ts` and adding specific APIs from `v1/`.
-This lets you skip downloading APIs you don't use.
+This lets you skip downloading APIs you don't plan on using.
 
 ```typescript
 // Assemble an API client manually
