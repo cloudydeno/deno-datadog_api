@@ -22,6 +22,7 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
     * For a full example of metrics submission, see `examples/emit-metrics.ts`
 * `v1Monitors`: get by id, get all, search by query
 * `v1ServiceChecks`: submit 'check run' statuses to Datadog
+* `v1Events`: submit events to Datadog
 * `v1UsageMetering`: get billable summary, get top custom metrics
 * `v2Roles`: list and describe roles & permissions
 * `v2Users`: list, search, and describe datadog users
