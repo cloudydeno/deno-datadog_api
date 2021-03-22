@@ -5,6 +5,7 @@ import v1MonitorsApi from "./v1/monitors.ts";
 import v1ServiceChecksApi from "./v1/service_checks.ts";
 export {CheckStatus} from './v1/service_checks.ts';
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
+import v1EventsApi from "./v1/events.ts";
 
 import v2RolesApi from "./v2/roles.ts";
 import v2UsersApi from "./v2/users.ts";
@@ -64,6 +65,15 @@ export default class DatadogApi extends ApiClient {
    */
   get v1ServiceChecks(): v1ServiceChecksApi {
     return new v1ServiceChecksApi(this);
+  }
+
+  /**
+   * The events API allows you to post events to Datadog.
+   * Event titles are limited to 100 characters.
+   * Event text are limited to 4000 characters.
+   */
+  get v1Events(): v1EventsApi {
+    return new v1EventsApi(this);
   }
 
   /**
