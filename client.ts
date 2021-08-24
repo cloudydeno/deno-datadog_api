@@ -51,7 +51,7 @@ export default class DatadogApiClient {
     const resp = await fetch(url, {
       headers: this.headers,
       method: opts.method ?? 'GET',
-      body: opts.body ? JSON.stringify(opts.body) : "",
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
 
     const respBody = await resp.text();
