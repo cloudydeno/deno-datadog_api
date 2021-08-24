@@ -1,4 +1,4 @@
-![Deno CI](https://github.com/danopia/deno-datadog_api/workflows/Deno%20CI/badge.svg?branch=main)
+![Deno CI](https://github.com/cloudydeno/deno-datadog_api/workflows/Deno%20CI/badge.svg?branch=main)
 
 # `/x/datadog_api`: Deno library for Datadog
 
