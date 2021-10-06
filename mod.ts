@@ -3,7 +3,7 @@ import ApiClient from "./client.ts";
 import v1MetricsApi from "./v1/metrics.ts";
 import v1MonitorsApi from "./v1/monitors.ts";
 import v1ServiceChecksApi from "./v1/service_checks.ts";
-export type {CheckStatus} from './v1/service_checks.ts';
+export {CheckStatus} from './v1/service_checks.ts';
 import v1ServiceDependenciesApi from "./v1/service_dependencies.ts";
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
 import v1EventsApi from "./v1/events.ts";
