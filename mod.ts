@@ -4,6 +4,7 @@ import v1MetricsApi from "./v1/metrics.ts";
 import v1MonitorsApi from "./v1/monitors.ts";
 import v1ServiceChecksApi from "./v1/service_checks.ts";
 export {CheckStatus} from './v1/service_checks.ts';
+import v1ServiceDependenciesApi from "./v1/service_dependencies.ts";
 import v1UsageMeteringApi from "./v1/usage_metering.ts";
 import v1EventsApi from "./v1/events.ts";
 
@@ -65,6 +66,17 @@ export default class DatadogApi extends ApiClient {
    */
   get v1ServiceChecks(): v1ServiceChecksApi {
     return new v1ServiceChecksApi(this);
+  }
+
+  /**
+   * APM Service Map API. For more information, visit the services map documentation:
+   * https://docs.datadoghq.com/tracing/visualization/services_map/
+   *
+   * Note: This API is in public beta.
+   * If you have any feedback, contact Datadog support.
+   */
+  get v1ServiceDependencies(): v1ServiceDependenciesApi {
+    return new v1ServiceDependenciesApi(this);
   }
 
   /**
