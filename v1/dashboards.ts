@@ -41,7 +41,10 @@ export default class DatadogDashboardsApi {
     return json.dashboards;
   }
 
-  /** Get a dashboard using the specified ID. */
+  /**
+   * Get a dashboard using the specified ID.
+   * Note: The typings
+   */
   async getOne(id: string): Promise<DatadogDashboard> {
     const json = await this.#api.fetchJson({
       path: `/api/v1/dashboard/${encodeURIComponent(id)}`,
@@ -63,7 +66,9 @@ export interface DatadogDashboardListEntry {
 }
 
 
+// FIXME: better dashboard types
 // All these types were originally generated using https://app.quicktype.io/
+//   and then mangled manually into looking reasonable.
 // Presumably we should use Datadog's OpenAPI spec eventually
 
 export interface DatadogDashboard {
@@ -112,7 +117,7 @@ interface PurpleDefinition {
   title_size?:          string;
   title_align?:         TextAlign;
   has_search_bar?:      "auto" | "fixed";
-  requests?:            PurpleRequest[] | PurpleRequests;
+  requests?:            PurpleRequest[] | HostMapRequests;
   legend_columns?:      LegendColumn[];
   yaxis?:               Axis;
   markers?:             Marker[];
@@ -148,7 +153,7 @@ interface PurpleDefinition {
   time?:                Time;
   xaxis?:               Xaxis;
   tags?:                string[];
-  group_by?:            TODO[];
+  group_by?:            GroupBy[];
   check?:               string;
   grouping?:            string;
   custom_links?:        TODO[];
@@ -208,12 +213,12 @@ interface PurpleRequest {
   order?:               string;
   formulas?:            Formula[];
   style?:               RequestStyle;
-  display_type?:        RequestDisplayType;
+  display_type?:        string;
   response_format?:     string;
   queries?:             PurpleQuery[];
   on_right_yaxis?:      boolean;
   metadata?:            Metadatum[];
-  conditional_formats?: PurpleConditionalFormat[];
+  conditional_formats?: ConditionalFormat[];
   log_query?:           LogQuery;
   apm_query?:           ApmQuery;
   query?:               FluffyQuery;
@@ -228,57 +233,20 @@ interface PurpleRequest {
 interface ApmQuery {
   index:    string;
   search:   Search;
-  group_by: ApmQueryGroupBy[];
-  compute:  ApmQueryCompute;
-}
-
-interface ApmQueryCompute {
-  aggregation: string;
-}
-
-interface ApmQueryGroupBy {
-  facet: string;
-  sort:  {
-    aggregation: string;
-    order:       string;
-  };
-  limit: number;
+  group_by: GroupBy[];
+  compute:  Compute;
 }
 
 interface Search {
   query: string;
 }
 
-interface PurpleConditionalFormat {
-  palette:          ConditionalFormatPalette;
+interface ConditionalFormat {
+  palette:          string;
   value:            number;
-  comparator:       Comparator;
+  comparator:       string;
   custom_fg_color?: string;
   custom_bg_color?: string;
-}
-
-enum Comparator {
-  Comparator = ">=",
-  Empty = "<=",
-  Fluffy = "<",
-  Purple = ">",
-}
-
-enum ConditionalFormatPalette {
-  CustomBg = "custom_bg",
-  CustomText = "custom_text",
-  GreenOnWhite = "green_on_white",
-  RedOnWhite = "red_on_white",
-  WhiteOnGreen = "white_on_green",
-  WhiteOnRed = "white_on_red",
-  WhiteOnYellow = "white_on_yellow",
-  YellowOnWhite = "yellow_on_white",
-}
-
-enum RequestDisplayType {
-  Area = "area",
-  Bars = "bars",
-  Line = "line",
 }
 
 interface Formula {
@@ -295,23 +263,17 @@ interface Limit {
 interface LogQuery {
   index:    string;
   search:   Search;
-  group_by: LogQueryGroupBy[];
-  compute:  LogQueryCompute;
+  group_by: GroupBy[];
+  compute:  Compute;
 }
 
-interface LogQueryCompute {
-  facet?:      string;
-  aggregation: string;
-  interval?:   number;
-}
-
-interface LogQueryGroupBy {
+interface GroupBy {
   facet: string;
-  sort:  FluffySort;
+  sort:  AggregatedSort;
   limit: number;
 }
 
-interface FluffySort {
+interface AggregatedSort {
   facet?:      string;
   order:       string;
   aggregation: string;
@@ -328,9 +290,9 @@ interface PurpleQuery {
   name:        string;
   aggregator?: LegendColumn;
   search?:     Search;
-  compute?:    ApmQueryCompute;
+  compute?:    Compute;
   indexes?:    string[];
-  group_by?:   ApmQueryGroupBy[];
+  group_by?:   GroupBy[];
 }
 
 interface FluffyQuery {
@@ -374,9 +336,9 @@ type StylePalette =
 | "warm"
 ;
 
-interface PurpleRequests {
+interface HostMapRequests {
   size?: Fill;
-  fill:  Fill;
+  fill?:  Fill;
 }
 
 interface Fill {
@@ -440,7 +402,7 @@ interface FluffyDefinition {
   xaxis?:               Axis;
   legend_size?:         string;
   autoscale?:           boolean;
-  group_by?:            TODO[];
+  group_by?:            GroupBy[];
   check?:               string;
   tags?:                string[];
   grouping?:            string;
@@ -470,10 +432,10 @@ interface FluffyRequest {
   formulas?:            Formula[];
   response_format?:     string;
   queries?:             TentacledQuery[];
-  conditional_formats?: FluffyConditionalFormat[];
+  conditional_formats?: ConditionalFormat[];
   style?:               RequestStyle;
   on_right_yaxis?:      boolean;
-  display_type?:        RequestDisplayType;
+  display_type?:        string;
   q?:                   string;
   metadata?:            Metadatum[];
   aggregator?:          LegendColumn;
@@ -484,49 +446,28 @@ interface FluffyRequest {
   log_query?:           LogQuery;
 }
 
-interface FluffyConditionalFormat {
-  palette:    ConditionalFormatPalette;
-  value:      number;
-  comparator: Comparator;
-}
-
 interface TentacledQuery {
   query?:      string;
   data_source: string;
   name:        string;
   aggregator?: LegendColumn;
   search?:     Search;
-  compute?:    PurpleCompute;
+  compute?:    Compute;
   indexes?:    string[];
-  group_by?:   PurpleGroupBy[];
+  group_by?:   GroupBy[];
 }
 
-interface PurpleCompute {
+interface Compute {
+  facet?:      string;
   aggregation: string;
   metric?:     string;
-}
-
-interface PurpleGroupBy {
-  facet: string;
-  sort:  TentacledSort;
-  limit: number;
-}
-
-interface TentacledSort {
-  metric?:     string;
-  aggregation: string;
-  order:       string;
+  interval?:   number;
 }
 
 interface RumQuery {
   search:   Search;
-  group_by: TODO[];
-  compute:  RumQueryCompute;
-}
-
-interface RumQueryCompute {
-  facet:       string;
-  aggregation: string;
+  group_by: GroupBy[];
+  compute:  Compute;
 }
 
 interface FluffyRequests {
