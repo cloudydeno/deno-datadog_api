@@ -28,14 +28,7 @@ export default class DatadogMonitorsApi {
     return json as DatadogMonitor;
   }
 
-  async search(query: string, opts: {
-    page?: number;
-    per_page?: number;
-    sort?: {
-      field: "name" | "status" | "tags";
-      order: "asc" | "desc";
-    };
-  } = {}): Promise<DatadogMonitorSearchResult> {
+  async search(query: string, opts: SearchOptions = {}): Promise<DatadogMonitorSearchResult> {
     const qs = new URLSearchParams([["query", query]]);
     if (opts.page != null) qs.set("page", `${opts.page}`);
     if (opts.per_page != null) qs.set("per_page", `${opts.per_page}`);
@@ -48,6 +41,26 @@ export default class DatadogMonitorsApi {
     });
     return json as DatadogMonitorSearchResult;
   }
+
+  /** Async generator which follows search pagination, to return every result. */
+  async* searchToEnd(query: string, opts: Omit<SearchOptions, 'page'> = {}) {
+    let page = 0;
+    let pageCount = 0;
+    do {
+      const list = await this.search(query, { ...opts, page });
+      yield* list.monitors;
+      pageCount = list.metadata.page_count;
+    } while (++page < pageCount);
+  }
+}
+
+export interface SearchOptions {
+  page?: number;
+  per_page?: number;
+  sort?: {
+    field: "name" | "status" | "tags";
+    order: "asc" | "desc";
+  };
 }
 
 interface UserRef {
