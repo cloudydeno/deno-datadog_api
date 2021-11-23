@@ -18,8 +18,9 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 
 ### Implemented APIs
 
+* `v1Dashboards`: get by id, list all
 * `v1Metrics`: submit custom data series points to Datadog
-    * For a full example of metrics submission, see `examples/emit-metrics.ts`
+    * For a working example of metrics submission, see `examples/emit-metrics.ts`
 * `v1Monitors`: get by id, get all, search by query
 * `v1ServiceChecks`: submit 'check run' statuses to Datadog
 * `v1ServiceDependencies`: list APM services and their dependencies
