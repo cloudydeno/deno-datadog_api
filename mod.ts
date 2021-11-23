@@ -1,5 +1,6 @@
 import ApiClient from "./client.ts";
 
+import v1DashboardsApi from "./v1/dashboards.ts";
 import v1MetricsApi from "./v1/metrics.ts";
 import v1MonitorsApi from "./v1/monitors.ts";
 import v1ServiceChecksApi from "./v1/service_checks.ts";
@@ -38,6 +39,14 @@ export default class DatadogApi extends ApiClient {
     return this.fetchJson({
       path: `/api/v1/validate`,
     }) as Promise<{valid: true}>;
+  }
+
+  /**
+ * Interact with your dashboard lists through the API to make it easier
+ * to organize, find, and share all of your dashboards with your team and organization.
+   */
+   get v1Dashboards(): v1DashboardsApi {
+    return new v1DashboardsApi(this);
   }
 
   /**
