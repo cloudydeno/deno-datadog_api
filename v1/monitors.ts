@@ -8,6 +8,12 @@ interface ApiClient {
   }): Promise<unknown>;
 }
 
+/**
+ * Monitors allow you to watch a metric or check that you care about,
+ * notifying your team when some defined threshold is exceeded.
+ *
+ * Official API docs: https://docs.datadoghq.com/api/latest/monitors/
+ */
 export default class DatadogMonitorsApi {
   #api: ApiClient;
   constructor(api: ApiClient) {
