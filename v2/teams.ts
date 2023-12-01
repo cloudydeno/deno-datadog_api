@@ -1,8 +1,5 @@
 import type {
-  UsersResultPage, UsersIncluded,
-  Role, User, Permission,
-  UserStatus,
-  UserInvitation,
+  TeamsResultPage, TeamFields, TeamsIncluded, Team
 } from "./lib/identity.ts";
 
 type TODO = unknown;
@@ -15,7 +12,7 @@ interface ApiClient {
   }): Promise<unknown>;
 }
 
-export default class DatadogUsersApi {
+export default class DatadogTeamsApi {
   #api: ApiClient;
   constructor(api: ApiClient) {
     this.#api = api;
@@ -25,45 +22,48 @@ export default class DatadogUsersApi {
    * Get the list of all users in the organization.
    * This list includes all users even if they are deactivated or unverified.
    */
-  async listUsers(opts: {
+  async listTeams(opts: {
     page?: number;
     per_page?: number;
     sort?: {
-      field: "name" | "modified_at" | "user_count";
+      field: "name" | "user_count";
       order?: "asc" | "desc";
     };
-    filter?: string;
-    filterStatus?: Array<UserStatus>;
-  } = {}): Promise<UsersResultPage<User> & UsersIncluded> {
+    filterKeyword?: string;
+    filterMe?: boolean;
+    fieldsTeam?: Array<TeamFields>;
+  } = {}): Promise<TeamsResultPage<Team> & TeamsIncluded> {
     const qs = new URLSearchParams();
     if (opts.page != null) qs.set("page[number]", `${opts.page}`);
     if (opts.per_page != null) qs.set("page[size]", `${opts.per_page}`);
     if (opts.sort != null) qs.set("sort",
       `${opts.sort.order == 'desc' ? '-' : ''}${opts.sort.field}`);
-    if (opts.filter != null) qs.set("filter", `${opts.filter}`);
-    if (opts.filterStatus) qs.set("filter[status]", opts.filterStatus.join(','));
+    if (opts.filterKeyword != null) qs.set("filter[keyword]", `${opts.filterKeyword}`);
+    if (opts.filterMe != null) qs.set("filter[me]", `${opts.filterMe}`);
+    if (opts.fieldsTeam) qs.set("fields[team]", opts.fieldsTeam.join(','));
 
     const json = await this.#api.fetchJson({
-      path: `/api/v2/users`,
+      path: `/api/v2/team`,
       query: qs,
     });
-    return json as UsersResultPage<User> & UsersIncluded;
+    return json as TeamsResultPage<Team> & TeamsIncluded;
   }
 
+  // starting from here: --- TODO ---
   /** Get a user in the organization specified by the user’s user_id. */
-  async getUser(userId: string): Promise<{data: User} & UsersIncluded> {
+  async getUser(userId: string): Promise<{data: User} & Included> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/users/${encodeURIComponent(userId)}`,
     });
-    return json as {data: User} & UsersIncluded;
+    return json as {data: User} & Included;
   }
 
   /** Returns the user information and all organizations joined by this user. */
-  async getUserOrgs(userId: string): Promise<{data: User} & UsersIncluded> {
+  async getUserOrgs(userId: string): Promise<{data: User} & Included> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/users/${encodeURIComponent(userId)}/orgs`,
     });
-    return json as {data: User} & UsersIncluded;
+    return json as {data: User} & Included;
   }
 
   /** Returns a list of the user’s permissions granted by the associated user’s roles. */
