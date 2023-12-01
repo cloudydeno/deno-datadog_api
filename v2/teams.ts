@@ -49,15 +49,24 @@ export default class DatadogTeamsApi {
     return json as TeamsResultPage<Team> & TeamsIncluded;
   }
 
-  // starting from here: --- TODO ---
-  /** Get a user in the organization specified by the user’s user_id. */
-  async getUser(userId: string): Promise<{data: User} & Included> {
+  /** Get a team in the organization specified by the team’s team_id. */
+  async getTeam(teamId: string): Promise<{data: Team}> {
     const json = await this.#api.fetchJson({
-      path: `/api/v2/users/${encodeURIComponent(userId)}`,
+      path: `/api/v2/team/${encodeURIComponent(userId)}`,
     });
-    return json as {data: User} & Included;
+    return json as {data: Team};
   }
 
+  /** Get a list of members for a team */
+  async getTeamMemberships(teamId: string): Promise<TeamsResultPage<TeamMembership>> {
+    const json = await this.#api.fetchJson({
+      path: `/api/v2/team/${encodeURIComponent(teamId)}/memberships`,
+    });
+    return json as TeamsResultPage<TeamMembership>;
+  }
+
+  //TODO: Get links for a team, Get a team link, Get permission settings for a team:
+  //https://docs.datadoghq.com/api/latest/teams/
   /** Returns the user information and all organizations joined by this user. */
   async getUserOrgs(userId: string): Promise<{data: User} & Included> {
     const json = await this.#api.fetchJson({

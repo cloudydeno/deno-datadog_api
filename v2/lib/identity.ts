@@ -208,7 +208,7 @@ export interface Team {
   };
 }
 
-export interface TeamMemberships {
+export interface TeamMembership {
   type: "team_memberships";
   id: string;
   attributes: {

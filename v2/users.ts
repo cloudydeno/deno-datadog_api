@@ -1,4 +1,5 @@
 import type {
+  TeamsResultPage, TeamMembership,
   UsersResultPage, UsersIncluded,
   Role, User, Permission,
   UserStatus,
@@ -80,6 +81,14 @@ export default class DatadogUsersApi {
       path: `/api/v2/user_invitations/${encodeURIComponent(uuid)}`,
     });
     return json as {data: UserInvitation};
+  }
+
+  /** Get a list of memberships for a user */
+  async getUserMemberships(userId: string): Promise<{data: TeamsResultPage<TeamMembership>}> {
+    const json = await this.#api.fetchJson({
+      path: `/api/v2/users/${encodeURIComponent(userId)}/memberships`,
+    });
+    return json as {data: Team};
   }
 
 }
