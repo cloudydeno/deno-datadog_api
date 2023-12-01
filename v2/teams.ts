@@ -65,30 +65,27 @@ export default class DatadogTeamsApi {
     return json as TeamsResultPage<TeamMembership>;
   }
 
-  //TODO: Get links for a team, Get a team link, Get permission settings for a team:
-  //https://docs.datadoghq.com/api/latest/teams/
-  /** Returns the user information and all organizations joined by this user. */
-  async getUserOrgs(userId: string): Promise<{data: User} & Included> {
+  /** List the links for a team */
+  async listTeamLinks(teamId: string): Promise<Array<TeamLink>> {
     const json = await this.#api.fetchJson({
-      path: `/api/v2/users/${encodeURIComponent(userId)}/orgs`,
+      path: `/api/v2/team/${encodeURIComponent(teamId)}/links`,
     });
-    return json as {data: User} & Included;
+    return json as Array<TeamLink>;
   }
 
-  /** Returns a list of the user’s permissions granted by the associated user’s roles. */
-  async getUserPermissions(userId: string): Promise<{data: Array<Permission>}> {
+  /** Get a single link for a team */
+  async getTeamLink(teamId: string, linkId: string): Promise<TeamLink> {
     const json = await this.#api.fetchJson({
-      path: `/api/v2/users/${encodeURIComponent(userId)}/permissions`,
+      path: `/api/v2/team/${encodeURIComponent(teamId)}/links/${encodeURIComponent(linkId)}`,
     });
-    return json as {data: Array<Permission>};
+    return json as TeamLink;
   }
 
-  /** Returns a single user invitation by its UUID. */
-  async getUserInvitation(uuid: string): Promise<{data: UserInvitation}> {
+  /** Get teams' permission settings */
+  async getTeamPermissionSettings(teamId: string): Promise<Array<TeamPermissionSetting>> {
     const json = await this.#api.fetchJson({
-      path: `/api/v2/user_invitations/${encodeURIComponent(uuid)}`,
+      path: `/api/v2/team/${encodeURIComponent(teamId)}/permission-settings`,
     });
-    return json as {data: UserInvitation};
+    return json as Array<TeamPermissionSetting>;
   }
-
 }
