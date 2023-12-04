@@ -114,6 +114,26 @@ export default class DatadogTeamsApi {
     return json as Array<TeamPermissionSetting>;
   }
 
+  /** Create a team */
+  async deleteTeam(name: string): Promise<string> {
+    let words = [...name.toLowerCase().matchAll(/[a-z0-9]+/g)].map((x) => x[0])
+    const handle = words.join("-")
+    const json = await this.#api.fetchJson({
+      method: "POST",
+      path: `/api/v2/team/${encodeURIComponent(teamId)}`,
+      body: {
+        data: {
+          type: "team",
+          attributes: {
+            name: name,
+            handle: handle
+          },
+          relationships: {}
+        }
+      }
+    });
+    return (json as { status: string }).status;
+  }
 
   /** Delete a team */
   async deleteTeam(teamId: string): Promise<string> {
