@@ -120,7 +120,7 @@ export default class DatadogTeamsApi {
     const handle = words.join("-")
     const json = await this.#api.fetchJson({
       method: "POST",
-      path: `/api/v2/team/${encodeURIComponent(teamId)}`,
+      path: `/api/v2/team`,
       body: {
         data: {
           type: "team",
