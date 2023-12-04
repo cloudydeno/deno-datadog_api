@@ -7,9 +7,28 @@ type TODO = unknown;
 // Common API client contract
 interface ApiClient {
   fetchJson(opts: {
-    path: string,
-    query?: URLSearchParams,
+    method: "GET" | "POST" | "DELETE";
+    path: string;
+    query?: URLSearchParams;
+    body?: unknown;
   }): Promise<unknown>;
+}
+
+export class NewTeamMembership implements TeamMembership {
+  type: "team_memberships";
+  id: string;
+  attributes: {
+    role: "admin"
+  };
+  relationships: {
+    user: {
+      data: Ref<"user">
+    }
+  }
+  create(teamId: string, userId: string) {
+    this.id = teamId;
+    this.relationships.user.data.id = userId;
+  }
 }
 
 export default class DatadogTeamsApi {
@@ -44,6 +63,7 @@ export default class DatadogTeamsApi {
 
     const json = await this.#api.fetchJson({
       path: `/api/v2/team`,
+      method: "GET",
       query: qs,
     });
     return json as TeamsResultPage<Team> & TeamsIncluded;
@@ -52,6 +72,7 @@ export default class DatadogTeamsApi {
   /** Get a team in the organization specified by the team’s team_id. */
   async getTeam(teamId: string): Promise<{data: Team}> {
     const json = await this.#api.fetchJson({
+      method: "GET",
       path: `/api/v2/team/${encodeURIComponent(userId)}`,
     });
     return json as {data: Team};
@@ -60,6 +81,7 @@ export default class DatadogTeamsApi {
   /** Get a list of members for a team */
   async getTeamMemberships(teamId: string): Promise<TeamsResultPage<TeamMembership>> {
     const json = await this.#api.fetchJson({
+      method: "GET",
       path: `/api/v2/team/${encodeURIComponent(teamId)}/memberships`,
     });
     return json as TeamsResultPage<TeamMembership>;
@@ -68,6 +90,7 @@ export default class DatadogTeamsApi {
   /** List the links for a team */
   async listTeamLinks(teamId: string): Promise<Array<TeamLink>> {
     const json = await this.#api.fetchJson({
+      method: "GET",
       path: `/api/v2/team/${encodeURIComponent(teamId)}/links`,
     });
     return json as Array<TeamLink>;
@@ -76,6 +99,7 @@ export default class DatadogTeamsApi {
   /** Get a single link for a team */
   async getTeamLink(teamId: string, linkId: string): Promise<TeamLink> {
     const json = await this.#api.fetchJson({
+      method: "GET",
       path: `/api/v2/team/${encodeURIComponent(teamId)}/links/${encodeURIComponent(linkId)}`,
     });
     return json as TeamLink;
@@ -84,8 +108,46 @@ export default class DatadogTeamsApi {
   /** Get teams' permission settings */
   async getTeamPermissionSettings(teamId: string): Promise<Array<TeamPermissionSetting>> {
     const json = await this.#api.fetchJson({
+      method: "GET",
       path: `/api/v2/team/${encodeURIComponent(teamId)}/permission-settings`,
     });
     return json as Array<TeamPermissionSetting>;
+  }
+
+
+  /** Delete a team */
+  async deleteTeam(teamId: string): Promise<string> {
+    const json = await this.#api.fetchJson({
+      method: "DELETE",
+      path: `/api/v2/team/${encodeURIComponent(teamId)}`,
+    });
+    return (json as { status: string }).status;
+  }
+
+  /** Add a user to a team */
+  async addUserToTeam(teamId: string, userId: string): Promise<string> {
+
+    const json = await this.#api.fetchJson({
+      method: "POST",
+      path: `/api/v2/team/${encodeURIComponent(teamId)}/memberships`,
+      body: {
+        data: {
+          type: "team_memberships";
+          id: teamId;
+          attributes: {
+            role: "admin"
+          };
+          relationships: {
+            user: {
+              data: {
+                type: "users"
+                id: userId
+              }
+            }
+          }
+        }
+      },
+    });
+    return (json as { status: string }).status;
   }
 }
