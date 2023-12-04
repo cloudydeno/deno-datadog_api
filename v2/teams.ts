@@ -115,7 +115,7 @@ export default class DatadogTeamsApi {
   }
 
   /** Create a team */
-  async deleteTeam(name: string): Promise<string> {
+  async createTeam(name: string): Promise<string> {
     let words = [...name.toLowerCase().matchAll(/[a-z0-9]+/g)].map((x) => x[0])
     const handle = words.join("-")
     const json = await this.#api.fetchJson({
