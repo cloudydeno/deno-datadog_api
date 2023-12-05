@@ -141,7 +141,7 @@ export interface UserInvitation {
   };
 }
 
-export interface TeamLinks {
+export interface TeamLink {
   type: "team_links";
   id: string;
   attributes: {

@@ -1,7 +1,7 @@
 import type {
   TeamsResultPage, TeamMembership,
   UsersResultPage, UsersIncluded,
-  Role, User, Permission,
+  User, Permission,
   UserStatus,
   UserInvitation,
 } from "./lib/identity.ts";

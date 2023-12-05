@@ -1,5 +1,6 @@
 import type {
-  TeamsResultPage, TeamFields, TeamsIncluded, Team
+  TeamsResultPage, TeamFields, TeamsIncluded, Team,
+  TeamMembership, TeamLink, TeamPermissionSetting
 } from "./lib/identity.ts";
 
 type TODO = unknown;
@@ -12,23 +13,6 @@ interface ApiClient {
     query?: URLSearchParams;
     body?: unknown;
   }): Promise<unknown>;
-}
-
-export class NewTeamMembership implements TeamMembership {
-  type: "team_memberships";
-  id: string;
-  attributes: {
-    role: "admin"
-  };
-  relationships: {
-    user: {
-      data: Ref<"user">
-    }
-  }
-  create(teamId: string, userId: string) {
-    this.id = teamId;
-    this.relationships.user.data.id = userId;
-  }
 }
 
 export default class DatadogTeamsApi {
@@ -73,7 +57,7 @@ export default class DatadogTeamsApi {
   async getTeam(teamId: string): Promise<{data: Team}> {
     const json = await this.#api.fetchJson({
       method: "GET",
-      path: `/api/v2/team/${encodeURIComponent(userId)}`,
+      path: `/api/v2/team/${encodeURIComponent(teamId)}`,
     });
     return json as {data: Team};
   }
@@ -116,7 +100,7 @@ export default class DatadogTeamsApi {
 
   /** Create a team */
   async createTeam(name: string): Promise<string> {
-    let words = [...name.toLowerCase().matchAll(/[a-z0-9]+/g)].map((x) => x[0])
+    const words = [...name.toLowerCase().matchAll(/[a-z0-9]+/g)].map((x) => x[0])
     const handle = words.join("-")
     const json = await this.#api.fetchJson({
       method: "POST",
@@ -152,15 +136,15 @@ export default class DatadogTeamsApi {
       path: `/api/v2/team/${encodeURIComponent(teamId)}/memberships`,
       body: {
         data: {
-          type: "team_memberships";
-          id: teamId;
+          type: "team_memberships",
+          id: teamId,
           attributes: {
             role: "admin"
-          };
+          },
           relationships: {
             user: {
               data: {
-                type: "users"
+                type: "users",
                 id: userId
               }
             }
