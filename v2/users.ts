@@ -88,7 +88,7 @@ export default class DatadogUsersApi {
     const json = await this.#api.fetchJson({
       path: `/api/v2/users/${encodeURIComponent(userId)}/memberships`,
     });
-    return json as {data: Team};
+    return json as {data: TeamsResultPage<TeamMembership>};
   }
 
 }
